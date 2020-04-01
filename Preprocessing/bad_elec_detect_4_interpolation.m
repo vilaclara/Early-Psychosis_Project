@@ -24,7 +24,16 @@ filt_order=8;
 
 %% Preprocessing
 
-Bad_elec=cell(1,2);
+name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
+try
+    load(name_mat);
+    start_i=i;
+catch
+    warning('No previous file, we start from scatch');
+    Bad_elec=cell(1,2);
+    start_i=1;
+end
+
 count_su=0;
 last_subj='';
 
@@ -33,7 +42,7 @@ files = dir( fullfile(raw_path) );   %# list all *.eph files (eg. Ctrl001.Epoch 
 files = {files.name}';                      %'# file names
 
 %data = cell(numel(files),1);                %# store file contents
-for i=1:numel(files)
+for i=start_i:numel(files)
     
     if files{i}(1)=='S' || files{i}(1)=='s'
         Key1   = sprintf('PAT');  
@@ -110,7 +119,7 @@ for i=1:numel(files)
         good_chans=setdiff(1:size(base_filtered.data,1),bad_chans);
         names=Bad_elec{count_su,2};
         for j=1:size(bad_chans,2)
-            names=sprintf('%s %s(%d)',names,chan_names{bad_chans(j)},bad_chans(j))
+            names=sprintf('%s %s(%d)',names,chan_names{bad_chans(j)},bad_chans(j));
         end
         Bad_elec{count_su,2}=names;
         
@@ -120,7 +129,7 @@ for i=1:numel(files)
     
         % Save file just in case
         name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
-        save(name_mat,'Bad_elec')
+        save(name_mat,'Bad_elec','i')
 end
 
 name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
