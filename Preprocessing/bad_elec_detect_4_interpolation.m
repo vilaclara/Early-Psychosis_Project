@@ -27,16 +27,16 @@ filt_order=8;
 name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
 try
     load(name_mat);
-    start_i=i;
+    start_i=i+1;
 catch
     warning('No previous file, we start from scatch');
     Bad_elec=cell(1,2);
     start_i=1;
+    count_su=0;
+    last_subj='';
 end
 
-count_su=0;
-last_subj='';
-
+    
 % Patients
 files = dir( fullfile(raw_path) );   %# list all *.eph files (eg. Ctrl001.Epoch 001.eph)
 files = {files.name}';                      %'# file names
@@ -118,8 +118,17 @@ for i=start_i:numel(files)
         bad_chans=input('Bad channels (vector): ');
         good_chans=setdiff(1:size(base_filtered.data,1),bad_chans);
         names=Bad_elec{count_su,2};
+        if ~isempty(names)
+            split_names = strsplit(names);
+        else
+            split_names='';
+        end
         for j=1:size(bad_chans,2)
-            names=sprintf('%s %s(%d)',names,chan_names{bad_chans(j)},bad_chans(j));
+            new_elc=sprintf('%s(%d)',chan_names{bad_chans(j)},bad_chans(j));
+            is_there=sum(strcmp(new_elc,split_names));
+            if ~(is_there)
+                names=sprintf('%s %s',names,new_elc);
+            end
         end
         Bad_elec{count_su,2}=names;
         
@@ -129,7 +138,7 @@ for i=start_i:numel(files)
     
         % Save file just in case
         name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
-        save(name_mat,'Bad_elec','i')
+        save(name_mat,'Bad_elec','i','count_su','last_subj')
 end
 
 name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
