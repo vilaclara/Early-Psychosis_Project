@@ -11,6 +11,7 @@ c_dir=cd;
 raw_path='/Users/mip/Documents/PdM/Data/BDFs/All_new/EEG data';
 
 addpath(genpath('/Users/laura/Documents/EPFL/Projets_Master/PdM/Code/Matlab/eeglab14_1_1b'));
+eeglab
 
 load('/Users/mip/Documents/PdM/Data/Cap/chanlocs.mat')
 for i=1:size(EEG.chanlocs,2)
