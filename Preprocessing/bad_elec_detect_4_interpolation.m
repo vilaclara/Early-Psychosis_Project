@@ -46,16 +46,21 @@ files = {files.name}';                      %'# file names
 for i=start_i:numel(files)
     
     if files{i}(1)=='S' || files{i}(1)=='s'
-        Key1   = sprintf('PAT');  
-        Key2   = sprintf('Pat');
-        Key3   = sprintf('CTRL');
-        Key4   = sprintf('Ctrl');   % We want the number right after the key
-        Index1 = strfind(files{i}, Key1);
-        Index2 = strfind(files{i}, Key2);
-        Index3 = strfind(files{i}, Key3);
-        Index4 = strfind(files{i}, Key4);
-        Index=[Index1 Index2 Index3 Index4];
-        Subj = sscanf(files{i}(1,Index(1) + length(Key):Index(1) + length(Key)+3), '%s', 1);
+        Keyo{1}   = sprintf('PAT');  
+        Keyo{2}   = sprintf('Pat');
+        Keyo{3}   = sprintf('CTRL');
+        Keyo{4}   = sprintf('Ctrl');   % We want the number right after the key
+        Indexo{1} = strfind(files{i}, Keyo{1});
+        Indexo{2} = strfind(files{i}, Keyo{2});
+        Indexo{3} = strfind(files{i}, Keyo{3});
+        Indexo{4} = strfind(files{i}, Keyo{4});
+        for i=1:4
+            id(i)=~isempty(Indexo{i});
+        end
+        [~,j]=find(id==1);
+        Index=Indexo{j};
+        Key=Keyo{j};
+        Subj = sscanf(files{i}(1,Index(1) + length(Key)+1:Index(1) + length(Key)+4), '%s', 1);
     elseif files{i}(1)=='C' || files{i}(1)=='c'
         Key   = sprintf('CONTROL');
         Index = strfind(files{i}, Key);
