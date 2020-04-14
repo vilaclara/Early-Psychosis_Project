@@ -15,7 +15,7 @@ def Averaging(Threshold,InterpedData,EpochsTF,Event,n,Res,Name):
     Value=InterpedData.copy()
     TVA=[]
     for i,e in enumerate(Event):
-        BaselinePeriod=Value[:,e-102:e]
+        BaselinePeriod=Value[:,e-204:e]
         BaselineValue=np.mean(BaselinePeriod, axis=1) 
         InterestPeriod=Value[:,e-EpochsTF[0]:e+EpochsTF[1]]
         Bl_InterestPeriod=(InterestPeriod.transpose() - BaselineValue).transpose()
@@ -26,21 +26,22 @@ def Averaging(Threshold,InterpedData,EpochsTF,Event,n,Res,Name):
         if (Diff<Threshold).all():
             TVA.append(1)
         else:
-            if (Diff<Threshold).sum() ==1:
-                print('ok')
-                TVA.append(1)
-            else:
-                TVA.append(0)
+            TVA.append(0)
+#            if (Diff<Threshold).sum() ==1:
+#                print('ok')
+#                TVA.append(1)
+#            else:
+#                TVA.append(0)
     TVA=np.array(TVA)
     InterestData=[]
     Accepted=0
     tmp=cf.Eph('')
     tmp.Electrodes=64
-    tmp.TF=614
+    tmp.TF=716
     tmp.Fs=1024
     for i,e in enumerate(Event):
         if TVA[i]==1:
-            BaselinePeriod=Value[:,e-102:e]
+            BaselinePeriod=Value[:,e-204:e]
             BaselineValue=np.mean(BaselinePeriod, axis=1) 
             InterestPeriod=Value[:,e-EpochsTF[0]:e+EpochsTF[1]]
             Bl_InterestPeriod=(InterestPeriod.transpose() - BaselineValue).transpose()
@@ -57,7 +58,7 @@ def Averaging(Threshold,InterpedData,EpochsTF,Event,n,Res,Name):
 
 def BandPass(Frequencies2BandPass,Data,FS):
     Value=Data.copy()
-    Order=2
+    Order=4
     nyq=FS/2.
     w=Frequencies2BandPass/(nyq)
     FilteredData=np.zeros(Data.shape)
@@ -75,7 +76,7 @@ def RmvDC(Data):
 
 def NotchFilter(Data,Freq,FS):
     Value=Data.copy()
-    order=2
+    order=4
     nyq=FS/2.
     Freq = Freq / nyq
     b, a = signal.butter(order, [Freq - 1. / nyq, Freq + 1. / nyq],btype='bandstop')
@@ -91,13 +92,13 @@ def ReadXls(XlsFile):
     Int=sh.col_values(1)
     return Sbj,Int
 
-XlsFile=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/Interpole-NewRaw.xls'
-BdfFolder=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/RawData'
-TvaFolder=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/csv/tva'
-ResBeforeInt=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/EPH/BeforeInt'
-ResAfterInt=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/EPH/std
+XlsFile=r'/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database1.xls'
+BdfFolder=r'/Users/mip/Documents/PdM/Data/BDFs/Database1_auditory'
+TvaFolder=r'/Users/mip/Documents/PdM/Data/csv/tva'
+#ResBeforeInt=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/EPH/BeforeInt'
+ResAfterInt=r'/Users/mip/Documents/PdM/Data/ERPs/Dataset1'
 # For interpoloation
-xyzFile=r'/Users/laura/Documents/EPFL/Projets_Master/PdM/Data/Cap/64-Biosemi.xyz'
+xyzFile=r'/Users/mip/Documents/PdM/Data/Cap/64-Biosemi.xyz'
 
 Sbj,Int=ReadXls(XlsFile)
 Int=[i.upper() for i in Int]
@@ -106,11 +107,6 @@ for i,s in enumerate(Sbj):
     print(s)
     bdf=glob.glob('%s/%s*.bdf'%(BdfFolder,s))
     n=1
-    try:
-        os.mkdir(ResBeforeInt+'/%s'%s)
-    except:
-        pass
-    Res=ResBeforeInt+'/%s'%s
     acc=0
     Erp=[]
     for b in bdf:
@@ -118,13 +114,28 @@ for i,s in enumerate(Sbj):
 ##        Tva=r'%s\%s'%(TvaFolder,name.replace('.bdf','.tva'))
 ##        Tva=np.int64(np.float64(np.array(cf.Tva(Tva).Data)))
         BdfData=cf.Bdf(b)
-        BdfData.ExtractMrk(WriteFile=False)
+        try:
+            BdfData.ExtractMrk(WriteFile=False)
+        except AttributeError:
+            print('Bdf instance has no attribute Statut')
+            break
         Trig=np.unique(BdfData.MrkTrig)
         count=[]
         for t in Trig:
             count.append((BdfData.MrkTrig==t).sum())
         count=np.array(count)
-        TrigStd=Trig[np.argmax(count)]
+        try:
+            TrigStd=Trig[np.argmin(count)]
+        except ValueError:
+            print('Bdf problem:')
+            print('b in Bdf:')
+            print(b)
+            print('count:')
+            print(count)
+            print('Trig:')
+            print(Trig)
+            print('TrigStd:')
+            print(TrigStd)
         Events=BdfData.MrkTime[BdfData.MrkTrig==TrigStd]
         H5=tables.open_file(BdfData.BdfFile.replace('.bdf','.h5'))
         FS=float(H5.get_node('/FS')[0])
@@ -142,7 +153,7 @@ for i,s in enumerate(Sbj):
             pass
         Res=ResAfterInt+r'/%s'%s
         # shutil.move(src,Res)
-        Sum,accepted,n=Averaging(80,Interpole.InterpoletedData.T,[102,512],Events,n,Res,s)
+        Sum,accepted,n=Averaging(80,Interpole.InterpoletedData.T,[204,614],Events,n,Res,s)
         Erp.append(Sum)
         acc+=accepted
         BdfData.RemoveH5()

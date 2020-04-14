@@ -258,6 +258,11 @@ class Bdf:
             ChanelName=[]
             for i in enumerate(range(NbChanel)):
                     ChanelName.append(f.read(16))
+                    
+            #try:
+            #    ChanelName=[x.replace(' ','') for x in ChanelName]
+            #except TypeError:
+            #    print('Weird error in cartool file Bdf function about ChanelName')
             ChanelName=[x.replace(' ','') for x in ChanelName]
             # Tansducteur type not use full
             f.read(NbChanel*80)
@@ -296,7 +301,7 @@ class Bdf:
                         for c in range(NbChanel):
                                 Chanel=[]
                                 for p in range(FS[c]):
-                                    Bin=f.read(3)
+                                    Bin=(f.read(3))
                                     Chanel.append(struct.unpack('<l','\xc3'+Bin)[0]/float(256*32))
                                 Data.append(np.array(Chanel))
                         Data=np.array(Data)
