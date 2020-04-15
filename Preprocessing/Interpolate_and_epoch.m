@@ -6,8 +6,13 @@ close all
 
 c_dir=cd;
 
-task='std';
+task='auditory';
+std = 65281;
+dev1 = 65282;
+dev2 = 65283;
+dev3 = 65284;
 
+OutDir='/Users/mip/Documents/PdM/Data/ERPs/Dataset1/';
 %% Future input arguments and global variables
 
 raw_path='/Users/mip/Documents/PdM/Data/BDFs/Database1_auditory';
@@ -33,6 +38,7 @@ low_cf=1;
 high_cf=40;
 filt_order=8;
 
+Nelec=64;
 
 %% load Bdf data
 
@@ -61,11 +67,11 @@ for subj=1:size(Subj_names,1)
             base_original.xmax=(base_original.pnts-1)/sr_new;
             %base_original.times=linspace(base_original.xmin,base_original.xmax,...
             %    size(base_original.data,2));
-            eegplot(base_original.data(1:64,:),'srate',base_original.srate);
+            %eegplot(base_original.data(1:64,:),'srate',base_original.srate);
 
             % Add channel position
             cd(c_dir)
-            n_channel_activity = 64;
+            n_channel_activity = Nelec;
             for ch1 = 1:n_channel_activity
                 base_original.chanlocs(ch1,1).labels=chan_names{ch1};
                 base_original.chanlocs(ch1,1).X = EEG.chanlocs(1,ch1).X;
@@ -83,9 +89,9 @@ for subj=1:size(Subj_names,1)
             %cd(namefolder);
             %save('base_original.mat','base_original','-v7.3');
             
-            bad_chans=[65:size(base_original.data,1)];
+            bad_chans=[Nelec+1:size(base_original.data,1)];
             base_ch_removed1=base_original;
-            good_chans=setdiff(1:64,bad_chans);
+            good_chans=setdiff(1:Nelec,bad_chans);
             n_channels=length(good_chans);
             base_ch_removed1.data=base_ch_removed1.data(good_chans,:);
             base_ch_removed1.nbchan=n_channels;
@@ -103,8 +109,9 @@ for subj=1:size(Subj_names,1)
             d1=design(h1,'Butter');
             h2=fdesign.lowpass('N,F3dB',filt_order,high_cf,sr);
             d2=design(h2,'Butter');
-            freqz(d1)
-            freqz(d2)
+            % Plot response
+            %freqz(d1)
+            %freqz(d2)
             for nn=1:n_channel_activity
                 base_filtered.data(nn,:)=filtfilt(d1.sosMatrix,d1.ScaleValues,...
                    base_filtered.data(nn,:));
@@ -150,7 +157,7 @@ for subj=1:size(Subj_names,1)
             base_ch_removed2.nbchan=n_channels;
             base_ch_removed2.chanlocs=base_ch_removed2.chanlocs(good_chans);
             base_ch_removed2.setname=['Sub' Subj '_' task '_ch_removed2'];
-            eegplot(base_ch_removed2.data(1:n_channel_activity-length(bad_chans),:),'srate',sr_new);
+            %eegplot(base_ch_removed2.data(1:n_channel_activity-length(bad_chans),:),'srate',sr_new);
             %save('base_ch_removed2.mat','base_ch_removed2');
 
             % Channel interpolation
@@ -161,27 +168,93 @@ for subj=1:size(Subj_names,1)
             %save('base_ch_interp.mat','base_ch_interp');
             
             %% EPOCH
-            
-            
-            
-            %% Common average re-referencing
-            disp('Re-referencing data...');
-            base_rereferenced=base_ch_interp;
-            base_rereferenced.data(1:n_channel_activity,:)=base_rereferenced.data(1:n_channel_activity,:)-repmat(mean...
-                (base_rereferenced.data(1:n_channel_activity,:),1),[size(base_rereferenced.data(1:n_channel_activity,:),1) 1]);
-            base_rereferenced.setname=['Sub' subject '_resting_rereferenced'];
-            eegplot(base_rereferenced.data(1:n_channel_activity,:),'srate',sr_new);
-            %save('base_rereferenced.mat','base_rereferenced');
-            channels_eyes = [1:32 34 35 36 37 40];
 
-            % Identify part where the patient opens the eye
-            TMPREJ = [];
-            eegplot(base_rereferenced.data(channels_eyes,:),'srate',sr_new,'command','close');
-            rm_data=[];
-            for nn=1:size(TMPREJ,1)
-                rm_data=[rm_data round(TMPREJ(nn,1)):round(TMPREJ(nn,2))];
+            baseline_tp=204;
+            epoch_tp=716;
+            
+            trigs=base_ch_interp.event;
+            for i=1:size(trigs,2)
+                T_type(i)=trigs(i).type;
+                T_lat(i)=trigs(i).latency;
             end
+            [trig_types,~,which_trig]=unique(T_type);
+            for i=1:size(trig_types,2)
+                nb_trig(i)=sum(which_trig==i);
+            end
+            
+%             std = 65281;
+%             dev1 = 65282;
+%             dev2 = 65283;
+%             dev3 = 65284;
+            
+            if strcmp(task,'auditory')
+                trig_type_name{1}='std';
+                trig_type_name{2}='dev1';
+                trig_type_name{3}='dev2';
+                trig_type_name{4}='dev3';
+                trig_type(1)=std;
+                trig_type(2)=dev1;
+                trig_type(3)=dev2;
+                trig_type(4)=dev3;
+                
+%                 std_lat=(T_lat(:,T_type==std));
+%                 dev1_lat=(T_lat(:,T_type==dev1));
+%                 dev2_lat=(T_lat(:,T_type==dev1));
+%                 dev3_lat=(T_lat(:,T_type==dev1));
+            end
+            
+            for trig=1:size(trig_type,2)
+                OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
+                latencies=(T_lat(:,T_type==trig_type(trig)));
+                
+                OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
+                if ~exist(OutDir2) 
+                    cd(OutDir1)
+                    mkdir(Subj)
+                    OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
+                    cd(OutDir2)
+                    start=1;
+                else
+                    cd(OutDir2)
+                    load('nb_epochs.mat')
+                    start=Nlat+1;
+                end
+                epochs=zeros(Nelec,baseline_tp+epoch_tp+1);
+                epochs_CAR=epochs;
+                for Nlat=start:start+size(latencies,2)-1
+                    lat=latencies(Nlat-(start-1));
+                    epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
+                    epochs=epochs+epoch;
+                    epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
+                    save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,Nlat),'epoch');
+                    a=1;
+                end
+                epochs=epochs/size(latencies,2);
+                save('nb_epochs.mat','Nlat')
+                save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
+                save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
+                a=1;    
+            end
+            movefile(filename,[raw_path '/Done']);
+%             %% Common average re-referencing
+%             disp('Re-referencing data...');
+%             base_rereferenced=base_ch_interp;
+%             base_rereferenced.data(1:n_channel_activity,:)=base_rereferenced.data(1:n_channel_activity,:)-repmat(mean...
+%                 (base_rereferenced.data(1:n_channel_activity,:),1),[size(base_rereferenced.data(1:n_channel_activity,:),1) 1]);
+%             base_rereferenced.setname=['Sub' subject '_resting_rereferenced'];
+%             eegplot(base_rereferenced.data(1:n_channel_activity,:),'srate',sr_new);
+%             %save('base_rereferenced.mat','base_rereferenced');
+%             channels_eyes = [1:32 34 35 36 37 40];
+% 
+%             % Identify part where the patient opens the eye
+%             TMPREJ = [];
+%             eegplot(base_rereferenced.data(channels_eyes,:),'srate',sr_new,'command','close');
+%             rm_data=[];
+%             for nn=1:size(TMPREJ,1)
+%                 rm_data=[rm_data round(TMPREJ(nn,1)):round(TMPREJ(nn,2))];
+%             end
 
+            clearvars -except files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task std dev1 dev2 dev3 OutDir raw_path chan_names EEG Subj_names Bad_elec
             
     end
 end
