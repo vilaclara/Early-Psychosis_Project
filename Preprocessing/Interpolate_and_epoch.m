@@ -49,6 +49,8 @@ for subj=1:size(Subj_names,1)
     Subj=Subj_names{subj};
     files=dir(sprintf('%s/%s*.bdf',raw_path,Subj_names{subj}));
     files = {files.name}';  
+    count_epo(1:4)=1;  % nb of accepted epochs
+    count_rej(1:4)=1;  % nb of rejected epochs
     
     for bdf=start_i:numel(files)
         
@@ -142,11 +144,16 @@ for subj=1:size(Subj_names,1)
             splitted = textscan(chain,'%s','Delimiter',' ');
             for i=1:size(splitted{1},1)
                 chan=splitted{1}{i};
+                flag=0;
                 if ~isempty(chan)
                     for j=1:size(chan_names,2)
                     	if strcmp(chan_names{j},chan)
                             bad_chans=[bad_chans j];
+                            flag=1;
                         end
+                    end
+                    if ~flag
+                        disp('Electrode not found!!!');
                     end
                 end
             end    
@@ -164,13 +171,13 @@ for subj=1:size(Subj_names,1)
             base_ch_interp = base_resampled;
             base_ch_interp = pop_interp(base_ch_interp,bad_chans,'spherical');
             base_ch_interp.setname=['Sub' Subj '_' task '_interp'];
-            eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
+            %eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
             %save('base_ch_interp.mat','base_ch_interp');
             
             %% EPOCH
 
             baseline_tp=204;
-            epoch_tp=716;
+            epoch_tp=614;
             
             trigs=base_ch_interp.event;
             for i=1:size(trigs,2)
@@ -182,11 +189,6 @@ for subj=1:size(Subj_names,1)
                 nb_trig(i)=sum(which_trig==i);
             end
             
-%             std = 65281;
-%             dev1 = 65282;
-%             dev2 = 65283;
-%             dev3 = 65284;
-            
             if strcmp(task,'auditory')
                 trig_type_name{1}='std';
                 trig_type_name{2}='dev1';
@@ -196,65 +198,57 @@ for subj=1:size(Subj_names,1)
                 trig_type(2)=dev1;
                 trig_type(3)=dev2;
                 trig_type(4)=dev3;
-                
-%                 std_lat=(T_lat(:,T_type==std));
-%                 dev1_lat=(T_lat(:,T_type==dev1));
-%                 dev2_lat=(T_lat(:,T_type==dev1));
-%                 dev3_lat=(T_lat(:,T_type==dev1));
             end
             
             for trig=1:size(trig_type,2)
                 OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
                 latencies=(T_lat(:,T_type==trig_type(trig)));
-                
+                latencies=latencies(latencies>baseline_tp);
+                latencies=latencies(latencies<(size(base_ch_interp.data,2)-epoch_tp));
                 OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
                 if ~exist(OutDir2) 
                     cd(OutDir1)
                     mkdir(Subj)
                     OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
                     cd(OutDir2)
-                    start=1;
                 else
                     cd(OutDir2)
                     load('nb_epochs.mat')
-                    start=Nlat+1;
+                    count_epo(trig)=count_e;
+                    count_rej(trig)=count_r;
                 end
                 epochs=zeros(Nelec,baseline_tp+epoch_tp+1);
                 epochs_CAR=epochs;
-                for Nlat=start:start+size(latencies,2)-1
-                    lat=latencies(Nlat-(start-1));
+                N=0;
+                for Nlat=1:size(latencies,2)
+                    lat=latencies(Nlat);
                     epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
-                    epochs=epochs+epoch;
-                    epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
-                    save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,Nlat),'epoch');
-                    a=1;
+                    maxE=max(epoch(:,102:716)');
+                    minE=min(epoch(:,102:716)');
+                    if (maxE-minE)<80
+                        epochs=epochs+epoch;
+                        epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
+                        save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,count_epo(trig)),'epoch');
+                        count_epo(trig)=count_epo(trig)+1;
+                        N=N+1;
+                    else
+                        count_rej(trig)=count_rej(trig)+1;
+                    end
                 end
-                epochs=epochs/size(latencies,2);
-                save('nb_epochs.mat','Nlat')
-                save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
-                save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
-                a=1;    
+                epochs=epochs/N;
+                epochs_CAR=epochs_CAR/N;
+                figure
+                plot(epochs_CAR','LineWidth',2)
+                count_e=count_epo(trig);
+                count_r=count_rej(trig);
+                save('nb_epochs.mat','count_e','count_r')
+                %save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
+                %save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
+                clear OutDir1 OutDir2 latencies epochs epochs_CAR epoch lat Nlat
             end
             movefile(filename,[raw_path '/Done']);
-%             %% Common average re-referencing
-%             disp('Re-referencing data...');
-%             base_rereferenced=base_ch_interp;
-%             base_rereferenced.data(1:n_channel_activity,:)=base_rereferenced.data(1:n_channel_activity,:)-repmat(mean...
-%                 (base_rereferenced.data(1:n_channel_activity,:),1),[size(base_rereferenced.data(1:n_channel_activity,:),1) 1]);
-%             base_rereferenced.setname=['Sub' subject '_resting_rereferenced'];
-%             eegplot(base_rereferenced.data(1:n_channel_activity,:),'srate',sr_new);
-%             %save('base_rereferenced.mat','base_rereferenced');
-%             channels_eyes = [1:32 34 35 36 37 40];
-% 
-%             % Identify part where the patient opens the eye
-%             TMPREJ = [];
-%             eegplot(base_rereferenced.data(channels_eyes,:),'srate',sr_new,'command','close');
-%             rm_data=[];
-%             for nn=1:size(TMPREJ,1)
-%                 rm_data=[rm_data round(TMPREJ(nn,1)):round(TMPREJ(nn,2))];
-%             end
-
-            clearvars -except files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task std dev1 dev2 dev3 OutDir raw_path chan_names EEG Subj_names Bad_elec
             
+            clearvars -except count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task std dev1 dev2 dev3 OutDir raw_path chan_names EEG Subj_names Bad_elec
+            close all
     end
 end

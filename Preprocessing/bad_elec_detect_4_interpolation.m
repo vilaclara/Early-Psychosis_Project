@@ -62,12 +62,14 @@ for i=start_i:numel(files)
         Key=Keyo{j};
         Subj = sscanf(files{i}(1,Index(1) + length(Key)+1:Index(1) + length(Key)+4), '%s', 1);
     elseif files{i}(1)=='C' || files{i}(1)=='c'
-        Key   = sprintf('CONTROL');
+        %Key   = sprintf('CONTROL');
+        Key   = sprintf('Ctrl0');
         Index = strfind(files{i}, Key);
         Subj0 = sscanf(files{i}(1,Index(1) + length(Key):Index(1) + length(Key)+1), '%s', 1);
         Subj=sprintf('Ctrl0%s',Subj0);
     elseif files{i}(1)=='L' || files{i}(1)=='l'
-        Key   = sprintf('LNAC');
+        %Key   = sprintf('LNAC');
+        Key   = sprintf('Lnac0');
         Index = strfind(files{i}, Key);
         Subj0 = sscanf(files{i}(1,Index(1) + length(Key):Index(1) + length(Key)+1), '%s', 1);
         Subj=sprintf('Lnac0%s',Subj0);
