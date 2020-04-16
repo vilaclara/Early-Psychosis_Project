@@ -171,7 +171,7 @@ for subj=1:size(Subj_names,1)
             base_ch_interp = base_resampled;
             base_ch_interp = pop_interp(base_ch_interp,bad_chans,'spherical');
             base_ch_interp.setname=['Sub' Subj '_' task '_interp'];
-            %eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
+            eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
             %save('base_ch_interp.mat','base_ch_interp');
             
             %% EPOCH

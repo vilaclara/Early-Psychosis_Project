@@ -31,4 +31,5 @@ for subj=1:size(Subj_names,1)
     
 end
 
-Subj2check=Subj_names(sum(count_ratio<0.5,2)>=1,:)
+Subj2check1=Subj_names(sum(count_ratio<0.5,2)>=1,:)
+Subj2check2=Subj_names(sum(count_epoch(:,2:4),2)<100,:)
