@@ -17,19 +17,35 @@ for subj=1:size(Subj_names,1)
         trig_type_name{2}='dev1';
         trig_type_name{3}='dev2';
         trig_type_name{4}='dev3';
+        trig_type_name{5}='IC1';
+        trig_type_name{6}='NIC1';
     end
 
     for trig=1:size(trig_type_name,2)
         OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
         OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
         
-        load(sprintf('%s/nb_epochs.mat',OutDir2));
-        count_epoch(subj,trig)=count_e;
-        count_rej(subj,trig)=count_r;
-        count_ratio(subj,trig)=count_e/(count_e+count_r);
+        try
+            load(sprintf('%s/nb_epochs.mat',OutDir2));
+            count_epoch(subj,trig)=count_e-1;
+            count_rej(subj,trig)=count_r-1;
+            count_ratio(subj,trig)=(count_e-1)/(count_e+count_r-2);
+        catch
+            count_epoch(subj,trig)=0;
+            count_rej(subj,trig)=0;
+            count_ratio(subj,trig)=0;
+        end
+        
     end
     
 end
 
-Subj2check1=Subj_names(sum(count_ratio<0.5,2)>=1,:)
+Subj2check1=Subj_names(sum(count_ratio<0.3,2)>=1,:)
+
+disp('Auditory \n')
+
 Subj2check2=Subj_names(sum(count_epoch(:,2:4),2)<100,:)
+
+disp('Visual \n')
+
+Subj2check2=Subj_names(sum(count_epoch(:,5:6),2)<100,:)
