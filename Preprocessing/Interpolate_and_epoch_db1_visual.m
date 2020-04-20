@@ -7,8 +7,10 @@ close all
 c_dir=cd;
 
 task='visual';
-ic = 65281; % 1 et 11 * 32
-nic = 65282; % 2 et 12 * 32
+ic(1) = 65281; % 1 et 11 * 32
+ic(2) = 65291;
+nic(1) = 65282; % 2 et 12 * 32
+nic(2) = 65292;
 
 OutDir='/Users/mip/Documents/PdM/Data/ERPs/Dataset1/';
 %% Future input arguments and global variables
@@ -190,8 +192,9 @@ for subj=1:size(Subj_names,1)
             if strcmp(task,'visual')
                 trig_type_name{1}='IC1';
                 trig_type_name{2}='NIC1';
-                trig_type(1)=ic;
-                trig_type(2)=nic;
+                ind=find(trig_types(2)==ic);
+                trig_type(1)=ic(ind);
+                trig_type(2)=nic(ind);
             end
             
             for trig=1:size(trig_type,2)
