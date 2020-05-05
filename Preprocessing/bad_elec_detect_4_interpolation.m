@@ -48,19 +48,25 @@ for i=start_i:numel(files)
     if files{i}(1)=='S' || files{i}(1)=='s'
         Keyo{1}   = sprintf('PAT');  
         Keyo{2}   = sprintf('Pat');
-        Keyo{3}   = sprintf('CTRL');
-        Keyo{4}   = sprintf('Ctrl');   % We want the number right after the key
+        Keyo{3}   = sprintf('Pat_Fep');
+        Keyo{4}   = sprintf('CTRL');
+        Keyo{5}   = sprintf('Ctrl');   % We want the number right after the key
         Indexo{1} = strfind(files{i}, Keyo{1});
         Indexo{2} = strfind(files{i}, Keyo{2});
         Indexo{3} = strfind(files{i}, Keyo{3});
         Indexo{4} = strfind(files{i}, Keyo{4});
-        for i=1:4
-            id(i)=~isempty(Indexo{i});
+        Indexo{5} = strfind(files{i}, Keyo{5});
+        for j=1:5
+            id(j)=~isempty(Indexo{j});
+        end
+        if id(3) % if Pat_Fep, put id if Pat to 0
+            id(2)=0;
         end
         [~,j]=find(id==1);
         Index=Indexo{j};
         Key=Keyo{j};
-        Subj = sscanf(files{i}(1,Index(1) + length(Key)+1:Index(1) + length(Key)+4), '%s', 1);
+        Subj = sscanf(files{i}(1,Index(1) + length(Key)+1:Index(1) + length(Key)+4), '%s', 1)
+        a=1;
     elseif files{i}(1)=='C' || files{i}(1)=='c'
         %Key   = sprintf('CONTROL');
         Key   = sprintf('Ctrl0');
@@ -132,7 +138,8 @@ for i=start_i:numel(files)
             split_names='';
         end
         for j=1:size(bad_chans,2)
-            new_elc=sprintf('%s(%d)',chan_names{bad_chans(j)},bad_chans(j));
+            %new_elc=sprintf('%s(%d)',chan_names{bad_chans(j)},bad_chans(j));
+            new_elc=sprintf('%s',chan_names{bad_chans(j)});
             is_there=sum(strcmp(new_elc,split_names));
             if ~(is_there)
                 names=sprintf('%s %s',names,new_elc);
@@ -147,6 +154,7 @@ for i=start_i:numel(files)
         % Save file just in case
         name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');
         save(name_mat,'Bad_elec','i','count_su','last_subj')
+        a=1;
 end
 
 name_mat=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Bad_elec_new_subj.mat');

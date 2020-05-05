@@ -62,8 +62,8 @@ for trig=1:size(trig_type_name,2)
         
         if count_ratio>0.2
             ERP=mean(All_pocs,3);
-            figure
-            plot(ERP')
+            %figure
+            %plot(ERP')
             save(sprintf('%s/%s_ERP.mat',OutDir0,Subj),'ERP');
         end
         clear All_pocs count_epoch count_rej
@@ -71,12 +71,3 @@ for trig=1:size(trig_type_name,2)
        a=1;     
 end
 
-Subj2check1=Subj_names(sum(count_ratio<0.3,2)>=1,:)
-
-disp('Auditory \n')
-
-Subj2check2=Subj_names(sum(count_epoch(:,2:4),2)<100,:)
-
-disp('Visual \n')
-
-Subj2check2=Subj_names(sum(count_epoch(:,5:6),2)<100,:)
