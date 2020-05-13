@@ -9,10 +9,10 @@ db=2;
 c_dir=cd;
 
 task='visual';
-ic1 = [65291 1];
-nic1 = [65292 2];
-ic2 = [65293 3]; % 1 et 11 * 32
-nic2 = [65294 4]; % 2 et 12 * 32
+ic1 = [1 11 65291];
+nic1 = [2 12 65292];
+ic2 = [3 13 65293]; % 1 et 11 * 32
+nic2 = [4 1465294]; % 2 et 12 * 32
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
@@ -197,9 +197,11 @@ for subj=1:size(Subj_names,1)
                 end
 
                 if sum(trig_types)<11
+                    id=1;
+                elseif sum(trig_types)<60
                     id=2;
                 else
-                    id=1;
+                    id=3;
                 end
                 
                 trig_type_name{1}='IC1';

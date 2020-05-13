@@ -9,10 +9,10 @@ db=2;
 c_dir=cd;
 
 task='auditory';
-std = [65281 1];
-dev1 = [65282 2];
-dev2 = [65283 3];
-dev3 = [65284 4];
+std = [1 11 65281];
+dev1 = [2 12 65282];
+dev2 = [3 13 65283];
+dev3 = [4 14 65284];
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
@@ -195,9 +195,11 @@ for subj=1:size(Subj_names,1)
                 end
 
                 if sum(trig_types)<11
+                    id=1;
+                elseif sum(trig_types)<60
                     id=2;
                 else
-                    id=1;
+                    id=3;
                 end
                 
                 trig_type_name{1}='std';
