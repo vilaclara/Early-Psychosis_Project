@@ -4,18 +4,20 @@ clc
 clear all
 close all
 
+db=2;
+
 c_dir=cd;
 
-task='auditory';
-std = 65281;
-dev1 = 65282;
-dev2 = 65283;
-dev3 = 65284;
+task='visual';
+ic1 = 65291;
+nic1 = 65292;
+ic2 = 65293; % 1 et 11 * 32
+nic2 = 65294; % 2 et 12 * 32
 
-OutDir='/Users/mip/Documents/PdM/Data/ERPs/Dataset1/';
+OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
 
-raw_path='/Users/mip/Documents/PdM/Data/BDFs/Database1_auditory';
+raw_path=sprintf('/Users/mip/Documents/PdM/Data/BDFs/Database%d_visual',db);
 
 addpath(genpath('/Users/laura/Documents/EPFL/Projets_Master/PdM/Code/Matlab/eeglab14_1_1b'));
 %eeglab
@@ -27,7 +29,7 @@ end
 
 % Load bad electrode info
 
-Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database1.xls');
+Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database%d.xls',db);
 [~,~,raw] = xlsread(Bad_elec_file);
 Subj_names=raw(:,1);
 Bad_elec=raw(:,2);
@@ -47,7 +49,7 @@ start_i=1;
 for subj=1:size(Subj_names,1)
 
     Subj=Subj_names{subj};
-    files=dir(sprintf('%s/%s*.bdf',raw_path,Subj_names{subj}));
+    files=dir(sprintf('%s/*%s*.bdf',raw_path,Subj_names{subj}));
     files = {files.name}';  
     count_epo(1:4)=1;  % nb of accepted epochs
     count_rej(1:4)=1;  % nb of rejected epochs
@@ -141,7 +143,11 @@ for subj=1:size(Subj_names,1)
             % Channels removal
             bad_chans=[];
             chain=Bad_elec{subj};
-            splitted = textscan(chain,'%s','Delimiter',' ');
+            if isnan(chain)
+                splitted{1}=[];
+            else
+                splitted = textscan(chain,'%s','Delimiter',' ');
+            end
             for i=1:size(splitted{1},1)
                 chan=splitted{1}{i};
                 flag=0;
@@ -171,7 +177,7 @@ for subj=1:size(Subj_names,1)
             base_ch_interp = base_resampled;
             base_ch_interp = pop_interp(base_ch_interp,bad_chans,'spherical');
             base_ch_interp.setname=['Sub' Subj '_' task '_interp'];
-            eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
+            %eegplot(base_ch_interp.data(1:n_channel_activity,:),'srate',sr_new);
             %save('base_ch_interp.mat','base_ch_interp');
             
             %% EPOCH
@@ -184,71 +190,73 @@ for subj=1:size(Subj_names,1)
                 T_type(i)=trigs(i).type;
                 T_lat(i)=trigs(i).latency;
             end
-            [trig_types,~,which_trig]=unique(T_type);
-            for i=1:size(trig_types,2)
-                nb_trig(i)=sum(which_trig==i);
-            end
-            
-            if strcmp(task,'auditory')
-                trig_type_name{1}='std';
-                trig_type_name{2}='dev1';
-                trig_type_name{3}='dev2';
-                trig_type_name{4}='dev3';
-                trig_type(1)=std;
-                trig_type(2)=dev1;
-                trig_type(3)=dev2;
-                trig_type(4)=dev3;
-            end
-            
-            for trig=1:size(trig_type,2)
-                OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
-                latencies=(T_lat(:,T_type==trig_type(trig)));
-                latencies=latencies(latencies>baseline_tp);
-                latencies=latencies(latencies<(size(base_ch_interp.data,2)-epoch_tp));
-                OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
-                if ~exist(OutDir2) 
-                    cd(OutDir1)
-                    mkdir(Subj)
+            if ~isempty(trigs)
+                [trig_types,~,which_trig]=unique(T_type);
+                for i=1:size(trig_types,2)
+                    nb_trig(i)=sum(which_trig==i);
+                end
+
+                if strcmp(task,'visual')
+                    trig_type_name{1}='IC1';
+                    trig_type_name{2}='NIC1';
+                    trig_type_name{3}='IC2';
+                    trig_type_name{4}='NIC2';
+                    trig_type(1)=ic1;
+                    trig_type(2)=nic1;
+                    trig_type(3)=ic2;
+                    trig_type(4)=nic2;
+                end
+
+                for trig=1:size(trig_type,2)
+                    OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
+                    latencies=(T_lat(:,T_type==trig_type(trig)));
+                    latencies=latencies(latencies>baseline_tp);
+                    latencies=latencies(latencies<(size(base_ch_interp.data,2)-epoch_tp));
                     OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
-                    cd(OutDir2)
-                else
-                    cd(OutDir2)
-                    load('nb_epochs.mat')
-                    count_epo(trig)=count_e;
-                    count_rej(trig)=count_r;
-                end
-                epochs=zeros(Nelec,baseline_tp+epoch_tp+1);
-                epochs_CAR=epochs;
-                N=0;
-                for Nlat=1:size(latencies,2)
-                    lat=latencies(Nlat);
-                    epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
-                    maxE=max(epoch(:,102:716)');
-                    minE=min(epoch(:,102:716)');
-                    if (maxE-minE)<80
-                        epochs=epochs+epoch;
-                        epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
-                        save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,count_epo(trig)),'epoch');
-                        count_epo(trig)=count_epo(trig)+1;
-                        N=N+1;
+                    if ~exist(OutDir2) 
+                        cd(OutDir1)
+                        mkdir(Subj)
+                        OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig_type_name{trig},Subj);
+                        cd(OutDir2)
                     else
-                        count_rej(trig)=count_rej(trig)+1;
+                        cd(OutDir2)
+                        load('nb_epochs.mat')
+                        count_epo(trig)=count_e;
+                        count_rej(trig)=count_r;
                     end
+                    epochs=zeros(Nelec,baseline_tp+epoch_tp+1);
+                    epochs_CAR=epochs;
+                    N=0;
+                    for Nlat=1:size(latencies,2)
+                        lat=latencies(Nlat);
+                        epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
+                        maxE=max(epoch(:,102:716)');
+                        minE=min(epoch(:,102:716)');
+                        if (maxE-minE)<80
+                            epochs=epochs+epoch;
+                            epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
+                            save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,count_epo(trig)),'epoch');
+                            count_epo(trig)=count_epo(trig)+1;
+                            N=N+1;
+                        else
+                            count_rej(trig)=count_rej(trig)+1;
+                        end
+                    end
+                    epochs=epochs/N;
+                    epochs_CAR=epochs_CAR/N;
+    %                 figure
+    %                 plot(epochs_CAR','LineWidth',2)
+                    count_e=count_epo(trig);
+                    count_r=count_rej(trig);
+                    save('nb_epochs.mat','count_e','count_r')
+                    %save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
+                    %save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
+                    clear OutDir1 OutDir2 latencies epochs epochs_CAR epoch lat Nlat
                 end
-                epochs=epochs/N;
-                epochs_CAR=epochs_CAR/N;
-                figure
-                plot(epochs_CAR','LineWidth',2)
-                count_e=count_epo(trig);
-                count_r=count_rej(trig);
-                save('nb_epochs.mat','count_e','count_r')
-                %save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
-                %save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
-                clear OutDir1 OutDir2 latencies epochs epochs_CAR epoch lat Nlat
             end
             movefile(filename,[raw_path '/Done']);
             
-            clearvars -except count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task std dev1 dev2 dev3 OutDir raw_path chan_names EEG Subj_names Bad_elec
+            clearvars -except count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task ic1 ic2 nic1 nic2 OutDir raw_path chan_names EEG Subj_names Bad_elec
             close all
     end
 end

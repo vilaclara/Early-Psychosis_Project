@@ -2,24 +2,25 @@ clc
 clear all
 close all
 
-task='auditory';
+db=2;
 
-OutDir='/Users/mip/Documents/PdM/Data/ERPs/Dataset1/';
-Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database1.xls');
+OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
+Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database%d.xls',db);
 [~,~,raw] = xlsread(Bad_elec_file);
 Subj_names=raw(:,1);
 Bad_elec=raw(:,2);
 
 for subj=1:size(Subj_names,1)
     Subj=Subj_names{subj};
-    if strcmp(task,'auditory')
-        trig_type_name{1}='std';
-        trig_type_name{2}='dev1';
-        trig_type_name{3}='dev2';
-        trig_type_name{4}='dev3';
-        trig_type_name{5}='IC1';
-        trig_type_name{6}='NIC1';
-    end
+    
+    trig_type_name{1}='std';
+    trig_type_name{2}='dev1';
+    trig_type_name{3}='dev2';
+    trig_type_name{4}='dev3';
+    trig_type_name{5}='IC1';
+    trig_type_name{6}='NIC1';
+    trig_type_name{5}='IC2';
+    trig_type_name{6}='NIC2';
 
     for trig=1:size(trig_type_name,2)
         OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
