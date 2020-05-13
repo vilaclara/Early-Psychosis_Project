@@ -9,10 +9,10 @@ db=2;
 c_dir=cd;
 
 task='visual';
-ic1 = 65291;
-nic1 = 65292;
-ic2 = 65293; % 1 et 11 * 32
-nic2 = 65294; % 2 et 12 * 32
+ic1 = [65291 1];
+nic1 = [65292 2];
+ic2 = [65293 3]; % 1 et 11 * 32
+nic2 = [65294 4]; % 2 et 12 * 32
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
@@ -196,16 +196,20 @@ for subj=1:size(Subj_names,1)
                     nb_trig(i)=sum(which_trig==i);
                 end
 
-                if strcmp(task,'visual')
-                    trig_type_name{1}='IC1';
-                    trig_type_name{2}='NIC1';
-                    trig_type_name{3}='IC2';
-                    trig_type_name{4}='NIC2';
-                    trig_type(1)=ic1;
-                    trig_type(2)=nic1;
-                    trig_type(3)=ic2;
-                    trig_type(4)=nic2;
+                if sum(trig_types)<11
+                    id=2;
+                else
+                    id=1;
                 end
+                
+                trig_type_name{1}='IC1';
+                trig_type_name{2}='NIC1';
+                trig_type_name{3}='IC2';
+                trig_type_name{4}='NIC2';
+                trig_type(1)=ic1(id);
+                trig_type(2)=nic1(id);
+                trig_type(3)=ic2(id);
+                trig_type(4)=nic2(id);
 
                 for trig=1:size(trig_type,2)
                     OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
@@ -253,7 +257,12 @@ for subj=1:size(Subj_names,1)
                     %save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
                     clear OutDir1 OutDir2 latencies epochs epochs_CAR epoch lat Nlat
                 end
+                
+                if count_epo(1)<10
+                    disp('not enough trials')
+                end
             end
+            
             movefile(filename,[raw_path '/Done']);
             
             clearvars -except count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task ic1 ic2 nic1 nic2 OutDir raw_path chan_names EEG Subj_names Bad_elec

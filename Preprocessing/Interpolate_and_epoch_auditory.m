@@ -9,10 +9,10 @@ db=2;
 c_dir=cd;
 
 task='auditory';
-std = 65281;
-dev1 = 65282;
-dev2 = 65283;
-dev3 = 65284;
+std = [65281 1];
+dev1 = [65282 2];
+dev2 = [65283 3];
+dev3 = [65284 4];
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
@@ -194,16 +194,20 @@ for subj=1:size(Subj_names,1)
                     nb_trig(i)=sum(which_trig==i);
                 end
 
-                if strcmp(task,'auditory')
-                    trig_type_name{1}='std';
-                    trig_type_name{2}='dev1';
-                    trig_type_name{3}='dev2';
-                    trig_type_name{4}='dev3';
-                    trig_type(1)=std;
-                    trig_type(2)=dev1;
-                    trig_type(3)=dev2;
-                    trig_type(4)=dev3;
+                if sum(trig_types)<11
+                    id=2;
+                else
+                    id=1;
                 end
+                
+                trig_type_name{1}='std';
+                trig_type_name{2}='dev1';
+                trig_type_name{3}='dev2';
+                trig_type_name{4}='dev3';
+                trig_type(1)=std(id);
+                trig_type(2)=dev1(id);
+                trig_type(3)=dev2(id);
+                trig_type(4)=dev3(id);
 
                 for trig=1:size(trig_type,2)
                     OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
@@ -250,6 +254,10 @@ for subj=1:size(Subj_names,1)
                     %save(sprintf('%s/%s_ERP.mat',OutDir1,Subj),'epochs');
                     %save(sprintf('%s/%s_ERP_CAR.mat',OutDir1,Subj),'epochs_CAR');
                     clear OutDir1 OutDir2 latencies epochs epochs_CAR epoch lat Nlat
+                end
+                
+                if count_epo(1)<10
+                    disp('not enough trials')
                 end
             end
             
