@@ -2,14 +2,6 @@ clc
 clear all
 close all
 
-% Manual computed latencies:
-% xp = 0
-% win7 = -15;
-% linux = -25
-% cery1 = 26
-% cery2 = 22
-
-
 % db=1;
 % load('OS_groups_db1.mat','Subj_names')
 % OS_groups{1}={}; %xp - nestle
@@ -43,7 +35,7 @@ for i=1:size(OS_groups,2)
 end
 
 %trig='std';
-trig='IC';
+trig='std';
 % trig_type_name{2}='dev';
 % trig_type_name{3}='IC';
 % trig_type_name{4}='NIC';
@@ -61,41 +53,63 @@ for os=1:size(OS_groups,2)
     
     OutDir0=sprintf('%s%s',OutDir,trig);
     
-    Pt_ERPs=[];
-    Ct_ERPs=[];
+    OutDir1=sprintf('%s%s/epochs',OutDir,trig);
     
-    Npt(os)=0;
-    Nct(os)=0;
+    n_poc_pt=1;
+    n_poc_ct=1;
+    
+    Pt_pocs=[];
+    Ct_pocs=[];
     
     for subj=1:size(OS_groups{os},1)
     
         Subj=OS_groups{os}{subj};
+        if Subj(1)=='F'
+            pt=1;
+        else
+            pt=0;
+        end
+        Npoc=1;
         
+        OutDir2=sprintf('%s/%s/epochs/%s',OutDir,trig,Subj);
+
         try
-            load(sprintf('%s/%s_ERP.mat',OutDir0,Subj));
-            error_loading=0;
+            load(sprintf('%s/nb_epochs.mat',OutDir2));
+            count_epoch=count_e-1;
+            count_rej=count_r-1;
         catch
-            error_loading=1;
+            count_epoch=0;
+            count_rej=0;
         end
 
-        if ~error_loading
-            if Subj(1)=='F'
-                Npt(os)=Npt(os)+1;
-                Pt_ERPs(:,Npt(os))=ERP(elec,:);
+        if count_epoch
+            files=dir(sprintf('%s/%s*.mat',OutDir2,Subj));
+            
+            if pt
+                for poc=Npoc:size(files,1)
+                    load(sprintf('%s/%s',OutDir2,files(poc-Npoc+1).name));
+                    Pt_pocs(:,n_poc_pt)=double(epoch(elec,:)-mean(epoch(elec,100:baseline_tp),2));%-mean(epoch(elec,100:baseline_tp),2)
+                    Npoc=poc+1;
+                    n_poc_pt=n_poc_pt+1;
+                end
             else
-                Nct(os)=Nct(os)+1;
-                Ct_ERPs(:,Nct(os))=ERP(elec,:);
+                for poc=Npoc:size(files,1)
+                    load(sprintf('%s/%s',OutDir2,files(poc-Npoc+1).name));
+                    Ct_pocs(:,n_poc_ct)=double(epoch(elec,:)-mean(epoch(elec,100:baseline_tp),2));%-mean(epoch(elec,100:baseline_tp),2)
+                    Npoc=poc+1;
+                    n_poc_ct=n_poc_ct+1;
+                end
             end
         end
         a=1;
         clear count_epoch count_rej
     end
     
-    Avg_Pt=mean(Pt_ERPs,2);
-    Avg_Ct=mean(Ct_ERPs,2);
-    Avg_All=mean([Pt_ERPs Ct_ERPs],2);
+    Avg_Pt=mean(Pt_pocs,2);
+    Avg_Ct=mean(Ct_pocs,2);
+    Avg_All=mean([Pt_pocs Ct_pocs],2);
     
-    save(sprintf('%s/OS_%d_elec_%s_ERP.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
+    save(sprintf('%s/OS_%d_elec_%s_epoch_avg.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
     
     fig=figure;
     plot(Avg_Ct,'LineWidth',2)
@@ -103,7 +117,7 @@ for os=1:size(OS_groups,2)
     plot(Avg_Pt,'LineWidth',2)
     hold on
     plot(Avg_All,'LineWidth',2)
-    l=legend(sprintf('Ct (%d)',Nct(os)),sprintf('Pt (%d)',Npt(os)),sprintf('All (%d)',Nct(os)+Npt(os)));
+    l=legend('Ct','Pt','All');
     l.FontSize=16;
     text1=sprintf('OS %d elec %s (N=%d)',os,chan_names{elec},size(OS_groups{os},1));
     t=title(text1);
@@ -134,6 +148,4 @@ l=legend('xp','win7','linux','cery win7 1','cery win7 2','baseline','50','100');
 l.FontSize=16;
 
 a=1;
-
-
 

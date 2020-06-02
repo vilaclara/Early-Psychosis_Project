@@ -14,6 +14,10 @@ trig_type_name{1}='std';
 trig_type_name{2}='dev';
 trig_type_name{3}='IC';
 trig_type_name{4}='NIC';
+% trig_type_name{5}='IC1';
+% trig_type_name{6}='NIC1';
+% trig_type_name{7}='IC2';
+% trig_type_name{8}='NIC2';
 
 baseline_tp=204;
   
@@ -28,10 +32,18 @@ for trig=1:size(trig_type_name,2)
             all_trig={'std'};
         case 'dev'
             all_trig={'dev1','dev2','dev3'};
-        case 'IC1'
+        case 'IC'
             all_trig={'IC1','IC2'};
-        case 'NIC1'
+        case 'NIC'
             all_trig={'NIC1','NIC2'};
+        case 'IC1'
+            all_trig={'IC1'};
+        case 'NIC1'
+            all_trig={'NIC1'};
+        case 'IC2'
+            all_trig={'IC2'};
+        case 'NIC2'
+            all_trig={'NIC2'};
     end
     
     for subj=1:size(Subj_names,1)
@@ -50,11 +62,11 @@ for trig=1:size(trig_type_name,2)
                 count_rej(typ)=0;
             end
 
-            if count_epoch
+            if count_epoch(typ)
                 files=dir(sprintf('%s/%s*.mat',OutDir2,Subj));
                 for poc=Npoc:size(files,1)
                     load(sprintf('%s/%s',OutDir2,files(poc-Npoc+1).name));
-                    All_pocs(:,:,poc)=double(epoch-mean(epoch(:,1:baseline_tp),2));
+                    All_pocs(:,:,poc)=double(epoch-mean(epoch(:,100:baseline_tp),2));
                 end
                 Npoc=poc+1;
             end

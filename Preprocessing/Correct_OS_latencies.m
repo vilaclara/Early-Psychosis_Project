@@ -3,11 +3,11 @@ clear all
 close all
 
 % Manual computed latencies:
-% xp = 0
-% win7 = -15;
-% linux = -25
-% cery1 = 26
-% cery2 = 22
+OS_lat{1}=0; %xp - nestle
+OS_lat{2}=-15; %win7 - nestle
+OS_lat{3}=-25; %linux - nestle
+OS_lat{4}=26; %win7 - Cery ancien labo
+OS_lat{5}=22; %win7 - Cery nouveau labo
 
 
 % db=1;
@@ -43,7 +43,7 @@ for i=1:size(OS_groups,2)
 end
 
 %trig='std';
-trig='IC';
+trig='dev';
 % trig_type_name{2}='dev';
 % trig_type_name{3}='IC';
 % trig_type_name{4}='NIC';
@@ -81,10 +81,10 @@ for os=1:size(OS_groups,2)
         if ~error_loading
             if Subj(1)=='F'
                 Npt(os)=Npt(os)+1;
-                Pt_ERPs(:,Npt(os))=ERP(elec,:);
+                Pt_ERPs(:,Npt(os))=ERP(elec,102-OS_lat{os}:102-OS_lat{os}+614);
             else
                 Nct(os)=Nct(os)+1;
-                Ct_ERPs(:,Nct(os))=ERP(elec,:);
+                Ct_ERPs(:,Nct(os))=ERP(elec,102-OS_lat{os}:102-OS_lat{os}+614);
             end
         end
         a=1;
@@ -95,23 +95,7 @@ for os=1:size(OS_groups,2)
     Avg_Ct=mean(Ct_ERPs,2);
     Avg_All=mean([Pt_ERPs Ct_ERPs],2);
     
-    save(sprintf('%s/OS_%d_elec_%s_ERP.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
-    
-    fig=figure;
-    plot(Avg_Ct,'LineWidth',2)
-    hold on
-    plot(Avg_Pt,'LineWidth',2)
-    hold on
-    plot(Avg_All,'LineWidth',2)
-    l=legend(sprintf('Ct (%d)',Nct(os)),sprintf('Pt (%d)',Npt(os)),sprintf('All (%d)',Nct(os)+Npt(os)));
-    l.FontSize=16;
-    text1=sprintf('OS %d elec %s (N=%d)',os,chan_names{elec},size(OS_groups{os},1));
-    t=title(text1);
-    t.FontSize=18;
-    xticks([0 204 306.4 408.8])
-    xticklabels({'-200','0','100','200'})
-    saveas(fig,sprintf('%s/OS_%d_elec_%s_plot.png',OutDir0,os,chan_names{elec}));
-    a=1;
+    save(sprintf('%s/OS_%d_elec_%s_ERP_corr.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
     clear Pt_pocs Ct_pocs n_poc_pt n_poc_ct Npoc
 end
 
@@ -120,16 +104,16 @@ end
 figure
 for os=1:size(OS_groups,2)
     OutDir0=sprintf('%s%s',OutDir,trig);
-    load(sprintf('%s/OS_%d_elec_%s_ERP.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
+    load(sprintf('%s/OS_%d_elec_%s_ERP_corr.mat',OutDir0,os,chan_names{elec}),'Avg_Pt','Avg_Ct','Avg_All');
     plot(Avg_Ct,'LineWidth',2)
     hold on
     a=1; 
 end
-xticks([0 204 306.4 408.8])
-xticklabels({'-200','0','100','200'})
-xline(baseline_tp);
-xline(baseline_tp+51.2);
-xline(baseline_tp+102.4);
+xticks([0 102 204.8 307.2])
+xticklabels({'-100','0','100','200'})
+xline(baseline_tp-102);
+xline(baseline_tp-102+51.2);
+xline(baseline_tp-102+102.4);
 l=legend('xp','win7','linux','cery win7 1','cery win7 2','baseline','50','100');
 l.FontSize=16;
 
