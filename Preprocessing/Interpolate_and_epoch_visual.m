@@ -12,7 +12,7 @@ task='visual';
 ic1 = [1 11 65291];
 nic1 = [2 12 65292];
 ic2 = [3 13 65293]; % 1 et 11 * 32
-nic2 = [4 1465294]; % 2 et 12 * 32
+nic2 = [4 14 65294]; % 2 et 12 * 32
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
@@ -36,7 +36,7 @@ Bad_elec=raw(:,2);
 
 sr=1024;
 sr_new=1024;
-low_cf=1;
+low_cf=0.1;
 high_cf=40;
 filt_order=8;
 
@@ -263,6 +263,8 @@ for subj=1:size(Subj_names,1)
                 if count_epo(1)<10
                     disp('not enough trials')
                 end
+            else
+                disp('empty trigs')
             end
             
             movefile(filename,[raw_path '/Done']);

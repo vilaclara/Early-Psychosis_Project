@@ -2,16 +2,18 @@ clc
 clear all
 close all
 
-OutDir='/Users/mip/Documents/PdM/Data/ERPs/Dataset1';
-Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database1.xls');
+db=2;
+
+OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
+Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database%d.xls',db);
 [~,~,raw] = xlsread(Bad_elec_file);
 Subj_names=raw(:,1);
 Bad_elec=raw(:,2);
 
 trig_type_name{1}='std';
 trig_type_name{2}='dev';
-trig_type_name{3}='IC1';
-trig_type_name{4}='NIC1';
+trig_type_name{3}='IC';
+trig_type_name{4}='NIC';
 
 baseline_tp=204;
   
@@ -27,9 +29,9 @@ for trig=1:size(trig_type_name,2)
         case 'dev'
             all_trig={'dev1','dev2','dev3'};
         case 'IC1'
-            all_trig={'IC1'};
+            all_trig={'IC1','IC2'};
         case 'NIC1'
-            all_trig={'NIC1'};
+            all_trig={'NIC1','NIC2'};
     end
     
     for subj=1:size(Subj_names,1)

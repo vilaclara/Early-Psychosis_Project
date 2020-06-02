@@ -19,8 +19,8 @@ for subj=1:size(Subj_names,1)
     trig_type_name{4}='dev3';
     trig_type_name{5}='IC1';
     trig_type_name{6}='NIC1';
-    trig_type_name{5}='IC2';
-    trig_type_name{6}='NIC2';
+    trig_type_name{7}='IC2';
+    trig_type_name{8}='NIC2';
 
     for trig=1:size(trig_type_name,2)
         OutDir1=sprintf('%s/%s/epochs',OutDir,trig_type_name{trig});
