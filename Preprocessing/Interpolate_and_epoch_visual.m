@@ -14,6 +14,15 @@ nic1 = [2 12 65292];
 ic2 = [3 13 65293]; % 1 et 11 * 32
 nic2 = [4 14 65294]; % 2 et 12 * 32
 
+baseline_tp=102;
+epoch_tp=512;
+
+OS_lat{1}=0; %xp - nestle
+OS_lat{2}=-15; %win7 - nestle
+OS_lat{3}=-25; %linux - nestle
+OS_lat{4}=26; %win7 - Cery ancien labo
+OS_lat{5}=22; %win7 - Cery nouveau labo
+
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 %% Future input arguments and global variables
 
@@ -33,6 +42,7 @@ Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessin
 [~,~,raw] = xlsread(Bad_elec_file);
 Subj_names=raw(:,1);
 Bad_elec=raw(:,2);
+Latency=raw(:,3);
 
 sr=1024;
 sr_new=1024;
@@ -49,6 +59,8 @@ start_i=1;
 for subj=1:size(Subj_names,1)
 
     Subj=Subj_names{subj};
+    OSlat=OS_lat{Latency{subj}};
+    
     files=dir(sprintf('%s/*%s*.bdf',raw_path,Subj_names{subj}));
     files = {files.name}';  
     count_epo(1:4)=1;  % nb of accepted epochs
@@ -182,13 +194,10 @@ for subj=1:size(Subj_names,1)
             
             %% EPOCH
 
-            baseline_tp=204;
-            epoch_tp=614;
-            
             trigs=base_ch_interp.event;
             for i=1:size(trigs,2)
                 T_type(i)=trigs(i).type;
-                T_lat(i)=trigs(i).latency;
+                T_lat(i)=trigs(i).latency-OSlat;
             end
             if ~isempty(trigs)
                 [trig_types,~,which_trig]=unique(T_type);
@@ -236,12 +245,15 @@ for subj=1:size(Subj_names,1)
                     for Nlat=1:size(latencies,2)
                         lat=latencies(Nlat);
                         epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
-                        maxE=max(epoch(:,102:716)');
-                        minE=min(epoch(:,102:716)');
+%                         maxE=max(epoch(:,102:716)');
+%                         minE=min(epoch(:,102:716)');
+                        maxE=max(epoch');
+                        minE=min(epoch');
                         if (maxE-minE)<80
                             epochs=epochs+epoch;
                             epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));
-                            save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,count_epo(trig)),'epoch');
+                            %save(sprintf('%s/%s_epoch_%d.mat',OutDir2,Subj,count_epo(trig)),'epoch');
+                            save(sprintf('%s/%s_epoch_%d_%d.mat',OutDir2,Subj,bdf,lat),'epoch');
                             count_epo(trig)=count_epo(trig)+1;
                             N=N+1;
                         else
@@ -269,7 +281,7 @@ for subj=1:size(Subj_names,1)
             
             movefile(filename,[raw_path '/Done']);
             
-            clearvars -except count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task ic1 ic2 nic1 nic2 OutDir raw_path chan_names EEG Subj_names Bad_elec
+            clearvars -except epoch_tp baseline_tp Latency OS_lat OSlat count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task ic1 ic2 nic1 nic2 OutDir raw_path chan_names EEG Subj_names Bad_elec
             close all
     end
 end

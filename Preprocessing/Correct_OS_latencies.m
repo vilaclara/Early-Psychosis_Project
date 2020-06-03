@@ -2,14 +2,6 @@ clc
 clear all
 close all
 
-% Manual computed latencies:
-OS_lat{1}=0; %xp - nestle
-OS_lat{2}=-15; %win7 - nestle
-OS_lat{3}=-25; %linux - nestle
-OS_lat{4}=26; %win7 - Cery ancien labo
-OS_lat{5}=22; %win7 - Cery nouveau labo
-
-
 % db=1;
 % load('OS_groups_db1.mat','Subj_names')
 % OS_groups{1}={}; %xp - nestle
@@ -43,10 +35,30 @@ for i=1:size(OS_groups,2)
 end
 
 %trig='std';
-trig='dev';
+trig='NIC';
 % trig_type_name{2}='dev';
 % trig_type_name{3}='IC';
 % trig_type_name{4}='NIC';
+
+% Manual computed latencies:
+if strcmp(trig,'std') || strcmp(trig,'dev')
+    OS_lat{1}=0; %xp - nestle
+    OS_lat{2}=189-244; %win7 - nestle
+    OS_lat{3}=189-174; %linux - nestle
+    OS_lat{4}=189-268; %win7 - Cery ancien labo
+    OS_lat{5}=189-262; %win7 - Cery nouveau labo
+    elec=48; % 32 CPz but Cz(48) seems to have biggest peak
+
+else
+    OS_lat{1}=0; %xp - nestle
+    OS_lat{2}=-15; %win7 - nestle
+    OS_lat{3}=-25; %linux - nestle
+    OS_lat{4}=26; %win7 - Cery ancien labo
+    OS_lat{5}=22; %win7 - Cery nouveau labo
+    elec=30; %30 for visual  
+end
+
+
 
 baseline_tp=204;
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
@@ -54,8 +66,6 @@ load('/Users/mip/Documents/PdM/Data/Cap/chanlocs.mat')
 for chan=1:size(EEG.chanlocs,2)
     chan_names{chan}=EEG.chanlocs(chan).labels;
 end   
-elec=30; %30 for visual  % 32 CPz
-%Cz(48) seems to have biggest peak
 
 for os=1:size(OS_groups,2)
     
@@ -114,7 +124,8 @@ xticklabels({'-100','0','100','200'})
 xline(baseline_tp-102);
 xline(baseline_tp-102+51.2);
 xline(baseline_tp-102+102.4);
-l=legend('xp','win7','linux','cery win7 1','cery win7 2','baseline','50','100');
+xline(baseline_tp-102+204.8);
+l=legend('xp','win7','linux','cery win7 1','cery win7 2','baseline','50','100','200');
 l.FontSize=16;
 
 a=1;
