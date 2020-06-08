@@ -10,24 +10,24 @@ close all
 % cery2 = 22
 
 
-% db=1;
-% load('OS_groups_db1.mat','Subj_names')
-% OS_groups{1}={}; %xp - nestle
-% OS_groups{2}={}; %win7 - nestle
-% OS_groups{3}={}; %linux - nestle
+db=1;
+load('OS_groups_db1.mat','Subj_names')
+OS_groups{1}={}; %xp - nestle
+OS_groups{2}={}; %win7 - nestle
+OS_groups{3}={}; %linux - nestle
 %Tous les sujets NAC ont été enregistré à Nestlé, mais check les dates d'enregistrement eeg pour savoir si c'était sous Windows XP ou Win7 (2 groupes différents car certainement pas les mêmes latences...)
 %Labo EEG Hôpital Nestlé (data JFK, Chrysa ; Dir. M.Murray):
 %Windows XP : datasets enregistrés avant ~01.01.2013
 %Win7 : datasets enregistrés dès ~01.01.2013 jusqu'à ~01.03.2017
 %Linux : datasets enregistrés dès ~01.03.2017
 
-db=2;
-load('OS_groups_db2.mat','Subj_names')
-OS_groups{1}={}; %xp - nestle
-OS_groups{2}={}; %win7 - nestle
-OS_groups{3}={}; %linux - nestle
-OS_groups{4}={}; %win7 - Cery ancien labo
-OS_groups{5}={}; %win7 - Cery nouveau labo
+% db=2;
+% load('OS_groups_db2.mat','Subj_names')
+% OS_groups{1}={}; %xp - nestle
+% OS_groups{2}={}; %win7 - nestle
+% OS_groups{3}={}; %linux - nestle
+% OS_groups{4}={}; %win7 - Cery ancien labo
+% OS_groups{5}={}; %win7 - Cery nouveau labo
 % Pour les sujets NCCR-Biomarqueurs enregistrés à Nestlé (JFK ou Chrysa):
 % Les datasets nommés "S1000_LS_...bdf" ont été enregistrés à Nestlé sous Windows XP (les no à partir de S1000, S1001, S1002, etc.)
 % Les datasets nommés "S2000_Ls_...bdf" ont été enregistrés à Nestlé sous Windows 7 ou sous Linux: tu dois regarder la date enregistrement pour déterminer cela
@@ -43,7 +43,7 @@ for i=1:size(OS_groups,2)
 end
 
 %trig='std';
-trig='IC';
+trig='std';
 % trig_type_name{2}='dev';
 % trig_type_name{3}='IC';
 % trig_type_name{4}='NIC';
@@ -54,7 +54,7 @@ load('/Users/mip/Documents/PdM/Data/Cap/chanlocs.mat')
 for chan=1:size(EEG.chanlocs,2)
     chan_names{chan}=EEG.chanlocs(chan).labels;
 end   
-elec=30; %30 for visual  % 32 CPz
+elec=48; %30 for visual  % 32 CPz
 %Cz(48) seems to have biggest peak
 
 for os=1:size(OS_groups,2)
@@ -110,7 +110,7 @@ for os=1:size(OS_groups,2)
     t.FontSize=18;
     xticks([0 204 306.4 408.8])
     xticklabels({'-200','0','100','200'})
-    saveas(fig,sprintf('%s/OS_%d_elec_%s_plot.png',OutDir0,os,chan_names{elec}));
+    %saveas(fig,sprintf('%s/OS_%d_elec_%s_plot.png',OutDir0,os,chan_names{elec}));
     a=1;
     clear Pt_pocs Ct_pocs n_poc_pt n_poc_ct Npoc
 end

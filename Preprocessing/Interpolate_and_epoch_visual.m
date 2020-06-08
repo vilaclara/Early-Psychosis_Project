@@ -4,15 +4,15 @@ clc
 clear all
 close all
 
-db=2;
+db=1;
 
 c_dir=cd;
 
 task='visual';
-ic1 = [1 11 65291];
-nic1 = [2 12 65292];
-ic2 = [3 13 65293]; % 1 et 11 * 32
-nic2 = [4 14 65294]; % 2 et 12 * 32
+ic1 = [1 11 65281 65291];
+nic1 = [2 12 65282 65292];
+ic2 = [3 13 65283 65293]; % 1 et 11 * 32
+nic2 = [4 14 65284 65294]; % 2 et 12 * 32
 
 baseline_tp=102;
 epoch_tp=512;
@@ -209,8 +209,10 @@ for subj=1:size(Subj_names,1)
                     id=1;
                 elseif sum(trig_types)<60
                     id=2;
-                else
+                elseif trig_types(1)<65290
                     id=3;
+                else 
+                    id=4;
                 end
                 
                 trig_type_name{1}='IC1';
@@ -285,3 +287,5 @@ for subj=1:size(Subj_names,1)
             close all
     end
 end
+
+fprintf('\n tout bien \n')

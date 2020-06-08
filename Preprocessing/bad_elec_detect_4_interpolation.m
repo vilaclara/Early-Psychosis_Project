@@ -19,7 +19,7 @@ for i=1:size(EEG.chanlocs,2)
 end    
 
 sr=1024;
-low_cf=1;
+low_cf=.1;
 high_cf=40;
 filt_order=8;
 

@@ -4,7 +4,7 @@ clc
 clear all
 close all
 
-db=2;
+db=1;
 
 c_dir=cd;
 
@@ -282,3 +282,4 @@ for subj=1:size(Subj_names,1)
             close all
     end
 end
+fprintf('\n tout bien \n')
