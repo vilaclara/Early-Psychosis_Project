@@ -5,7 +5,7 @@ close all
 db=2;
 
 %trig='std';
-trig='IC';
+trig='std';
 % trig_type_name{2}='dev';
 % trig_type_name{3}='IC';
 % trig_type_name{4}='NIC';
@@ -19,7 +19,7 @@ end
 if strcmp(trig,'std') || strcmp(trig,'dev')
     elec=48;% 32 CPz Cz(48) seems to have biggest peak
 else
-    elec=30; %30 for visual  
+    elec=26; %  POz(30) PO3(26) PO4(63) for visual 
 end
 
 Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database%d.xls',db);
@@ -82,24 +82,50 @@ t=title(text1);
 t.FontSize=18;
 xticks([0 102 204.4 306.6 409])
 xticklabels({'-100','0','100','200','300'})
-saveas(fig,sprintf('%s/Plot_mean_elec_%s_%s_plot.png',OutDir,trig,chan_names{elec}));
+saveas(fig,sprintf('%s/Plot_mean_elec_%s_%s_plot_db_%d.png',OutDir,trig,chan_names{elec},db));
 a=1;
 
 %% plot
 
 fig=figure;
+    
+    
 for su=1:size(All_ERPs,2)
+    
+    CorrMat(su,:)=corr(All_ERPs(:,su),Avg_All);
+    
     plot(All_ERPs(:,su),'LineWidth',1)
     fprintf('\n %s\n',All_names{su})
     hold on
+    
+%     figure
+%     plot(All_ERPs(:,su),'LineWidth',1)
+%     fprintf('\n %s\n',All_names{su})
+%     hold on
+%     plot(Avg_All,'LineWidth',2)
+%     l=legend(sprintf('Subject %s',All_names{su}),sprintf('Average (%d)',Nct+Npt));
+%     l.FontSize=16;
+%     text1=sprintf('ERP %s %s elec %s db%d',All_names{su},trig,chan_names{elec},db);
+%     t=title(text1);
+%     t.FontSize=18;
+%     xticks([0 102 204.4 306.6 409])
+%     xticklabels({'-100','0','100','200','300'})
+%     a=1;
+%     close all
 end
-text1=sprintf('ERPs %s elec %s db%d',trig,chan_names{elec},db);
+
+plot(Avg_All,'LineWidth',2)
+text1=sprintf('Mean ERP %s elec %s db%d',trig,chan_names{elec},db);
 t=title(text1);
 t.FontSize=18;
 xticks([0 102 204.4 306.6 409])
 xticklabels({'-100','0','100','200','300'})
-saveas(fig,sprintf('%s/Plot_each_elec_%s_%s_plot.png',OutDir,trig,chan_names{elec}));
 a=1;
+saveas(fig,sprintf('%s/Plot_mean_elec_%s_%s_plot_all_db_%d.png',OutDir,trig,chan_names{elec},db));
+    
+figure
+imagesc(CorrMat)
 
+%saveas(fig,sprintf('%s/Plot_each_elec_%s_%s_plot.png',OutDir,trig,chan_names{elec}));
 
 

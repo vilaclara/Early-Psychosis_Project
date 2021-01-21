@@ -4,7 +4,7 @@ clc
 clear all
 close all
 
-db=1;
+db=2;
 
 c_dir=cd;
 
@@ -192,6 +192,10 @@ for subj=1:size(Subj_names,1)
             
             %% EPOCH
 
+            All_Channel_num=1:64;
+            Outter_channels=[1 2 7 8 15 16 23:25 27:29 33:35 42:43 52:53 60:62 64];
+            Channel_num=All_Channel_num(setdiff(1:end,Outter_channels));
+
             trigs=base_ch_interp.event;
             for i=1:size(trigs,2)
                 T_type(i)=trigs(i).type;
@@ -246,8 +250,8 @@ for subj=1:size(Subj_names,1)
                         epoch=base_ch_interp.data(:,lat-baseline_tp:lat+epoch_tp);
 %                         maxE=max(epoch(:,102:716)');
 %                         minE=min(epoch(:,102:716)');
-                        maxE=max(epoch');
-                        minE=min(epoch');
+                        maxE=max(epoch(Channel_num,:)');
+                        minE=min(epoch(Channel_num,:)');
                         if (maxE-minE)<80
                             epochs=epochs+epoch;
                             epochs_CAR=epochs_CAR+(epoch-mean(epoch(:,1:baseline_tp),2));

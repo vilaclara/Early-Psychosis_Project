@@ -2,12 +2,17 @@ clc
 clear all
 close all
 
-db=1;
+db=2;
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
+
 Bad_elec_file=sprintf('/Users/mip/Documents/Early-psychosis_Project/Preprocessing/Elec2Interpolate_Database%d.xls',db);
 [~,~,raw] = xlsread(Bad_elec_file);
 Subj_names=raw(:,1);
+
+All_Channel_num=1:64;
+Outter_channels=[1 2 7 8 15 16 23:25 27:29 33:35 42:43 52:53 60:62 64];
+Channel_num=All_Channel_num(setdiff(1:end,Outter_channels));
 
 trig_type_name{1}='std';
 trig_type_name{2}='dev1';
@@ -84,7 +89,12 @@ for trig=1:size(trig_type_name,2)
                 files=dir(sprintf('%s/%s*.mat',OutDir2,Subj));
                 for poc=Npoc:size(files,1)
                     load(sprintf('%s/%s',OutDir2,files(poc-Npoc+1).name));
-                    All_pocs(:,:,poc)=double(epoch-mean(epoch(:,1:baseline_tp),2));
+                    % CAR (only inner channels)
+                    for tp=1:size(epoch,2)
+                        car_epoch(:,tp)=double(epoch(:,tp)-mean(epoch(Channel_num,tp)));
+                    end
+                    % Baseline correction
+                    All_pocs(:,:,poc)=car_epoch-mean(car_epoch(:,1:baseline_tp),2);
                 end
                 Npoc=poc+1;
             end
@@ -102,7 +112,7 @@ for trig=1:size(trig_type_name,2)
             %figure
             %plot(ERP')
         else
-            disp('ratio small')
+            fprintf('%s lack trials for %s \n',Subj,trig_type_name{trig})
         end
         clear All_pocs count_epoch count_rej
     end

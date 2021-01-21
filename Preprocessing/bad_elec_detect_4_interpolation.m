@@ -72,13 +72,15 @@ for i=start_i:numel(files)
         Key   = sprintf('Ctrl0');
         Index = strfind(files{i}, Key);
         Subj0 = sscanf(files{i}(1,Index(1) + length(Key):Index(1) + length(Key)+1), '%s', 1);
-        Subj=sprintf('Ctrl0%s',Subj0);
+        Subj=sprintf('Ctrl0%s',Subj0)
+        a=1;
     elseif files{i}(1)=='L' || files{i}(1)=='l'
         %Key   = sprintf('LNAC');
         Key   = sprintf('Lnac0');
         Index = strfind(files{i}, Key);
         Subj0 = sscanf(files{i}(1,Index(1) + length(Key):Index(1) + length(Key)+1), '%s', 1);
-        Subj=sprintf('Lnac0%s',Subj0);
+        Subj=sprintf('Lnac0%s',Subj0)
+        a=1;
     else
         continue
     end
@@ -105,8 +107,13 @@ for i=start_i:numel(files)
 
         % Data filtering
         %disp('Filtering data...');
+        
+        All_Channel_num=1:64;
+        Outter_channels=[1 2 7 8 15 16 23:25 27:29 33:35 42:43 52:53 60:62 64];
+        Channel_num=All_Channel_num(setdiff(1:end,Outter_channels));
+
         base_filtered=The_data;
-        base_filtered.data = double(base_filtered.data(1:64,:));
+        base_filtered.data = double(base_filtered.data(Channel_num,:));
 %             base_filtered.data=base_filtered.data-repmat(mean(base_filtered.data,2),...
 %                 [1 size(base_filtered.data,2)]);
         h1=fdesign.highpass('N,F3dB',filt_order,low_cf,sr);
@@ -139,7 +146,7 @@ for i=start_i:numel(files)
         end
         for j=1:size(bad_chans,2)
             %new_elc=sprintf('%s(%d)',chan_names{bad_chans(j)},bad_chans(j));
-            new_elc=sprintf('%s',chan_names{bad_chans(j)});
+            new_elc=sprintf('%s',chan_names{Channel_num(bad_chans(j))});
             is_there=sum(strcmp(new_elc,split_names));
             if ~(is_there)
                 names=sprintf('%s %s',names,new_elc);
