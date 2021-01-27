@@ -6,6 +6,9 @@ close all
 
 db=2;
 
+addpath('/Users/mip/Documents/PdM/Code/Matlab/eeglab14_1_1b');
+eeglab
+
 c_dir=cd;
 
 task='auditory';
@@ -46,7 +49,7 @@ Latency=raw(:,3);
 
 sr=1024;
 sr_new=1024;
-low_cf=0.1;
+low_cf=1;
 high_cf=40;
 filt_order=8;
 
@@ -285,5 +288,6 @@ for subj=1:size(Subj_names,1)
             clearvars -except epoch_tp baseline_tp Latency OS_lat OSlat count_epo count_rej bdf subj c_dir files Subj start_i Nelec sr filt_order high_cf low_cf sr_new task std dev1 dev2 dev3 OutDir raw_path chan_names EEG Subj_names Bad_elec
             close all
     end
+    a=1;
 end
 fprintf('\n tout bien \n')

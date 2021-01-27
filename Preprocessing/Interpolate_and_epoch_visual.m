@@ -46,7 +46,7 @@ Latency=raw(:,3);
 
 sr=1024;
 sr_new=1024;
-low_cf=0.1;
+low_cf=1;
 high_cf=40;
 filt_order=8;
 
