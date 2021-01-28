@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-db=2;
+db=2; % 1 or 2
 
 OutDir=sprintf('/Users/mip/Documents/PdM/Data/ERPs/Dataset%d/',db);
 
@@ -102,17 +102,15 @@ for trig=1:size(trig_type_name,2)
         end
         count_ratio=sum(count_epoch)/(sum(count_epoch)+sum(count_rej));
         
-        if count_ratio>0.1
+        if exist('All_pocs')
+        %if count_ratio>0.1
             ERP=mean(All_pocs,3);
             save(sprintf('%s/%s_ERP.mat',OutDir01,Subj),'ERP');
             
             GFP=std(ERP);
             save(sprintf('%s/%s_GFP.mat',OutDir02,Subj),'GFP');
-            
-            %figure
-            %plot(ERP')
-        else
-            fprintf('%s lack trials for %s \n',Subj,trig_type_name{trig})
+        %else
+        %    fprintf('%s lack trials for %s \n',Subj,trig_type_name{trig})
         end
         clear All_pocs count_epoch count_rej
     end
