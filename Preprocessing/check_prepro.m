@@ -14,7 +14,7 @@ for chan=1:size(EEG.chanlocs,2)
     chan_names{chan}=EEG.chanlocs(chan).labels;
 end   
 
-for trig_i=1:4
+for trig_i=3:4
 
     triga=trigsa{trig_i};
     trigb=trigsb{trig_i};

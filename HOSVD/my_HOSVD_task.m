@@ -20,7 +20,7 @@ for cas=1:size(Types,2)
     % 4 for Sy ct and Nac pt
     % 5 for all ct and all pt
 
-    DB=1;
+    DB=2;
 
     switch DB
         case 1

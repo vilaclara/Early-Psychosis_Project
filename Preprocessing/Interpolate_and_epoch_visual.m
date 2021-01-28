@@ -4,7 +4,10 @@ clc
 clear all
 close all
 
-db=2;
+db=2; % 1 or 2
+
+addpath('/Users/mip/Documents/PdM/Code/Matlab/eeglab14_1_1b');
+eeglab
 
 c_dir=cd;
 
@@ -209,11 +212,16 @@ for subj=1:size(Subj_names,1)
                     nb_trig(i)=sum(which_trig==i);
                 end
 
+%                 ic1 = [1 11 65281 65291];
+%                 nic1 = [2 12 65282 65292];
+%                 ic2 = [3 13 65283 65293]; % 1 et 11 * 32
+%                 nic2 = [4 14 65284 65294]; % 2 et 12 * 32
+
                 if sum(trig_types)<11
                     id=1;
                 elseif sum(trig_types)<60
                     id=2;
-                elseif trig_types(1)<65290
+                elseif trig_types(2)<65290
                     id=3;
                 else 
                     id=4;
